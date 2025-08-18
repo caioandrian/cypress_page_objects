@@ -26,8 +26,6 @@
 
 require('cypress-xpath');
 
-import 'cypress-file-upload';
-
 Cypress.Commands.add('stepNotImplemented', () => { 
   console.log('O step não foi implementado!');
   cy.log('O step não foi implementado!');

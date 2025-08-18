@@ -1,10 +1,7 @@
 /// <reference types = "cypress"/>
 
-const cucumber = require('cypress-cucumber-preprocessor').default;
 const { beforeRunHook, afterRunHook } = require('cypress-mochawesome-reporter/lib');  
 const exec = require('child_process').execSync;  
-const { isFileExist, findFiles } = require('cy-verify-downloads');
-const { removeDirectory } = require('cypress-delete-downloads-folder');
 
 const fs = require('fs-extra');
 const path = require('path');
@@ -19,10 +16,6 @@ function getConfigurationByFile(file) {
 }
 
 module.exports = (on, config) => {
-  on('file:preprocessor', cucumber());
-
-  on('task', { isFileExist, findFiles, removeDirectory});
-
   //teste de acessibilidade
   on('task', {
     log(message) {console.log(message);  return null;},
