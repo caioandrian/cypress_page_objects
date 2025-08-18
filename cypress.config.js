@@ -9,7 +9,6 @@ module.exports = defineConfig({
   includeShadowDom: true,
   numTestsKeptInMemory: 5,
   screenshotsFolder: 'cypress/reports/screenshots',
-  'cucumberautocomplete.strictGherkinCompletion': true,
   video: false,
   videoCompression: 20,
   modifyObstructiveCode: false,
