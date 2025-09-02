@@ -259,4 +259,15 @@ export default class Element {
     
     return count;
   }
+
+  static getIframe(elementID, index = undefined, scroll = undefined){
+    return this.getElement(elementID, index, scroll)
+      .its('0.contentDocument.body')
+      .should('be.visible')
+      .then(cy.wrap);
+  }
+
+  static getIframeLoaded(elementID){
+    cy.frameLoaded(elementID);
+  }
 }

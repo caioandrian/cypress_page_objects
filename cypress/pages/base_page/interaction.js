@@ -109,4 +109,19 @@ export default class Interaction extends Element {
   static doubleClickElement(elementID, index = undefined, scroll = undefined) {
     return this.getElement(elementID, index, scroll).dblclick({force: true});
   }
+
+  static typeElementInsideIframe(elementID, elementInside, value){
+    this.getIframe(elementID)
+      .find(elementInside)
+      .eq(0)
+      .type(value, { force: true});
+  }
+
+  static clickElementByShadowAndFind(element, position = 0, find = null, p2 = 0){
+    return this.getElement(element, position)
+      .shadow()
+      .find(find)
+      .eq(p2)
+      .click({force: true});
+  }
 }
