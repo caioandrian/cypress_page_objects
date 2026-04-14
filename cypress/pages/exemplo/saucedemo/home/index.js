@@ -1,4 +1,4 @@
-import Element from '../../../base_page/element';
+import Elements from '../../../base_page/elements';
 import Interaction from '../../../base_page/interaction';
 import Request from '../../../base_page/request';
 import Navigation from '../../../base_page/navigation';
@@ -15,11 +15,11 @@ export class Saucedemo_Home{
 
     let dados_produto = {}
     
-    Element.getElementText(el.PRODUTOS.ITEM_TITULO, posicao).then((titulo) =>{
+    Elements.getElementText(el.PRODUTOS.ITEM_TITULO, posicao).then((titulo) =>{
       dados_produto.titulo = titulo
     })
 
-    Element.getElementText(el.PRODUTOS.ITEM_PRECO, posicao).then((preco) =>{
+    Elements.getElementText(el.PRODUTOS.ITEM_PRECO, posicao).then((preco) =>{
       dados_produto.preco = preco
     })
 

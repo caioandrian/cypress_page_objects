@@ -36,7 +36,7 @@ cypress/
 O projeto utiliza uma estrutura organizada de Page Objects:
 
 - **base_page/**: Classes base com métodos reutilizáveis
-  - `element.js`: Métodos base para elementos
+  - `Elements.js`: Métodos base para elementos
   - `interaction.js`: Interações comuns
   - `navigation.js`: Navegação entre páginas
   - `request.js`: Requisições HTTP

@@ -1,4 +1,4 @@
-import Element from '../../../base_page/element';
+import Elements from '../../../base_page/elements';
 import Interaction from '../../../base_page/interaction';
 import Request from '../../../base_page/request';
 import Navigation from '../../../base_page/navigation';

@@ -1,8 +1,8 @@
-import Element from './element';
 import Request from './request';
+import Elements from './elements';
 
-export default class Validation extends Element {
-  static validateRequestStatusCode(response_request, expectCode, prop1 = undefined, prop2 = undefined, prop3 = undefined) {
+export default class Validation extends Elements {
+  static validateRequestStatusCode(response_request, expectCode, prop1 = undefined, prop2 = undefined, prop3 = undefined){
     if(prop1)
       expect(response_request.body).to.have.property(prop1).and.to.be.not.empty;
     if(prop2)
@@ -13,14 +13,14 @@ export default class Validation extends Element {
     expect(response_request.status).to.be.eq(expectCode);
   }
 
-  static validateRequestPropertyBoolean(value, expected) {
+  static validateRequestPropertyBoolean(value, expected){
     expect(value, `O valor da propriedade diferente do esperado. Atual: ${value} - Esperado: ${expected}.`).to.equal(expected);
   }
 
   static validateURLStatus(method = 'GET', ambiente, status = 200) {
     cy.request({
       method: method,
-      url: ambiente,
+      url:ambiente,
       failOnStatusCode: false
     })
       .then((res) => {
@@ -30,23 +30,25 @@ export default class Validation extends Element {
           });
       });
   }
-  static validateElementIsVisible(elementID, index = undefined, scroll = undefined) {
+
+  static validateElementIsVisible(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll).as('el');
     cy.get('@el').should('be.visible', {message: `O elemento não está visível. Identificador: ${elementID}.`});
   }
 
-  static validateElementNotExist(elementID, scroll = false) {
+  static validateElementNotExist(elementID, scroll = false){
     this.getElementWithoutIndex(elementID, scroll)
       .should('not.exist', {message: `O elemento não deveria existir. Identificador: ${elementID}.`});
   }
 
-  static validateElementExist(elementID, index = undefined, scroll = undefined) {
+  static validateElementExist(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll).as('el');
     cy.get('@el').should('exist', {message: `O elemento deveria existir. Identificador: ${elementID}.`});
   }
 
-  static validateElementHaveText(elementID, text, index = undefined, scroll = undefined) {
-    this.getElement(elementID, index, scroll)
+  static validateElementHaveText(elementID, text, index = undefined, scroll = undefined){
+    this.getElement(elementID, index, scroll).as('el');
+    cy.get('@el')
       .then((el) => {
         const actualText = el.text();
         cy.wrap(el)
@@ -63,23 +65,37 @@ export default class Validation extends Element {
       });
   }
 
-  static validatePageContainsText(text) {
+  static validatePageContainsText(text){
     cy.contains(text, { timeout: Cypress.env('global_timeout'), matchCase: false })
       .scrollIntoView({ offset: { top: -window.innerHeight / 2, left: 0 } })
       .should('be.visible', {message: `O texto "${text}" não está visível na página.`});
   }
 
-  static validateElementIsEnabled(elementID, index = undefined, scroll = undefined) {
+  static validateElementIsEnabled(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should("be.enabled", { message: `O elemento não está Habilitado. Identificador: ${elementID}`});
   }
 
-  static validateElementIsDisabled(elementID, index = undefined, scroll = undefined) {
+  static validateElementIsDisabled(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should('be.disabled', { message: `O elemento não está Desabilitado. Identificador: ${elementID}`});
   }
 
-  static validateImgIsVisible(elementID) {
+  static validateElementVisibleFilterByVisible(elementID, index = undefined, scroll = undefined){
+    this.getElementFilterVisible(elementID, index, scroll).as('el');
+    cy.get('@el').should('be.visible', {message: `O elemento não está visível. Identificador: ${elementID}.`});
+  }
+
+  static validateElementHaveValue(elementID, value, index = undefined, scroll = undefined){
+    this.getElement(elementID, index, scroll)
+      .invoke('val')
+      .then((actualValue) => {
+        cy.wrap(actualValue)
+          .should("equal", value, { message: `O elemento não possui o valor esperado. Atual: ${actualValue} - Esperado: "${value}". Identificador: ${elementID}.`});
+      });
+  }
+
+  static validateImgIsVisible(elementID){
     this.getElement(elementID)
       .should('be.visible')
       .and(($img) => {
@@ -88,28 +104,28 @@ export default class Validation extends Element {
       });
   }
 
-  static validateElementFilterByVisibleIsVisible(elementID, index = undefined, scroll = undefined) {
+  static validateElementFilterByVisibleIsVisible(elementID, index = undefined, scroll = undefined){
     this.getElementFilterVisible(elementID, index, scroll).as('el');
     cy.get('@el').should('be.visible', {message: `O elemento não está visível. Identificador: ${elementID}.`});
   }
 
-  static validateElementIsNotEmpty(elementID, index = undefined, scroll = undefined) {
+  static validateElementIsNotEmpty(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll).as('el');
     cy.get('@el').should('to.be.not.empty', {message: `O elemento não deveria estar vazio. Identificador: ${elementID}.`});
   }
 
-  static validateElementFilterVisibleIsNotEmpty(elementID, index = undefined, scroll = undefined) {
+  static validateElementFilterVisibleIsNotEmpty(elementID, index = undefined, scroll = undefined){
     this.getElementFilterVisible(elementID, index, scroll).as('el');
     cy.get('@el').should('to.be.not.empty', {message: `O elemento não deveria estar vazio. Identificador: ${elementID}.`});
   }
 
-  static validateElementIsEmpty(elementID, index = undefined, scroll = undefined) {
+  static validateElementIsEmpty(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll).as('el');
     cy.get('@el').should('to.be.empty', {message: `O elemento deveria estar vazio. Identificador: ${elementID}.`});
   }
 
-  static validateElementHaveTextFilterVisible(elementID, text, index = undefined, scroll = undefined) {
-    cy.getElementFilterVisible(elementID, index, scroll)
+  static validateElementHaveTextFilterVisible(elementID, text, index = undefined, scroll = undefined){
+    this.getElementFilterVisible(elementID, index, scroll)
       .then((el) => {
         const actualText = el.text();
         cy.wrap(el)
@@ -117,89 +133,106 @@ export default class Validation extends Element {
       });
   }
 
-  static validateElementLengthWithoutScroll(elementID, value, option = "", index = 0, scroll = false) {
-    switch(option) {
-      case ">=": this.getElement(elementID, index, scroll)
-        .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`}); 
-        break;
-      case "<=": this.getElement(elementID, index, scroll)
-        .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`}); 
-        break;
-      default: this.getElement(elementID, index, scroll)
-        .should('have.length', value, {message:`A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`}); 
-        break;
+  static validateElementLengthWithoutScroll(elementID, value, option = "", index = 0, scroll = false){
+    switch(option){
+    case ">=": this.getElement(elementID, index, scroll)
+      .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`}); 
+      break;
+    case "<=": this.getElement(elementID, index, scroll)
+      .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`}); 
+      break;
+    default: this.getElement(elementID, index, scroll)
+      .should('have.length', value, {message:`A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`}); 
+      break;
     }
   }
 
-  static validateElementLengthWithoutIndex(elementID, value, option = "", scroll = false) {
-    switch(option) {
-      case ">=": this.getElementWithoutIndex(elementID, scroll)
+  static validateElementLengthWithoutIndex(elementID, value, option = "", scroll = false){
+    switch(option){
+    case ">=": this.getElementWithoutIndex(elementID, scroll)
+      .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    case "<=": this.getElementWithoutIndex(elementID, scroll)
+      .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    default: this.getElementWithoutIndex(elementID, scroll)
+      .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`}); 
+      break;
+    }
+  }
+
+  static validateElementLengthByChildrenWithoutScroll(elementID, value, option = "", index = 0, scroll = false){
+    switch (option) {
+    case ">=":
+      this.getElement(elementID, index, scroll)
+        .children()
         .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      case "<=": this.getElementWithoutIndex(elementID, scroll)
+      break;
+    case "<=":
+      this.getElement(elementID, index, scroll)
+        .children()
         .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      default: this.getElementWithoutIndex(elementID, scroll)
+      break;
+    default:
+      this.getElement(elementID, index, scroll)
+        .children()
         .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`}); 
-        break;
+      break;
     }
   }
 
-  static validateElementLengthByChildrenWithoutScroll(elementID, value, option = "", index = 0, scroll = false) {
+  static validateElementLengthByChildren(elementID, value, option = "", index = 0, scroll = undefined){
     switch (option) {
-      case ">=":
-        this.getElement(elementID, index, scroll)
-          .children()
-          .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      case "<=":
-        this.getElement(elementID, index, scroll)
-          .children()
-          .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      default:
-        this.getElement(elementID, index, scroll)
-          .children()
-          .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`}); 
-        break;
-    }
-  }
-
-  static validateElementLengthByChildren(elementID, value, option = "", index = 0, scroll = undefined) {
-    switch (option) {
-      case ">=":
-        this.getElement(elementID, index, scroll)
-          .children()
-          .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      case "<=":
-        this.getElement(elementID, index, scroll)
-          .children()
-          .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      default:
-        this.getElement(elementID, index, scroll)
-          .children()
-          .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`});
-        break;
-    }
-  }
-
-  static validateElementLengthFilterVisible(elementID, value, option = "", index = 0, scroll = undefined) {
-    switch(option) {
-      case ">=": this.getElementFilterVisible(elementID, index, scroll)
+    case ">=":
+      this.getElement(elementID, index, scroll)
+        .children()
         .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      case "<=": this.getElementFilterVisible(elementID, index, scroll)
+      break;
+    case "<=":
+      this.getElement(elementID, index, scroll)
+        .children()
         .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
-        break;
-      default: this.getElementFilterVisible(elementID, index, scroll)
+      break;
+    default:
+      this.getElement(elementID, index, scroll)
+        .children()
         .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`});
-        break;
+      break;
     }
   }
 
-  static validateArrayElementLength(elementID, value, scroll = undefined) {
+  static validateElementLength(elementID, value, option = "", index = 0, scroll = undefined){
+    switch (option) {
+    case ">=":
+      this.getElement(elementID, index, scroll)
+        .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    case "<=":
+      this.getElement(elementID, index, scroll)
+        .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    default:
+      this.getElement(elementID, index, scroll)
+        .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    }
+  }
+
+  static validateElementLengthFilterVisible(elementID, value, option = "", index = 0, scroll = undefined){
+    switch(option){
+    case ">=": this.getElementFilterVisible(elementID, index, scroll)
+      .should('have.length.gte', value, {message: `A quantidade deve ser maior ou igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    case "<=": this.getElementFilterVisible(elementID, index, scroll)
+      .should('have.length.lte', value, {message: `A quantidade deve ser menor ou igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    default: this.getElementFilterVisible(elementID, index, scroll)
+      .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`});
+      break;
+    }
+  }
+
+  static validateArrayElementLength(elementID, value, scroll = undefined){
     if (elementID.includes("//")) {
       cy.xpath(elementID, { timeout: Cypress.env('global_timeout') })
         .should('have.length', value, {message: `A quantidade deve ser igual a ${value}. Identificador: ${elementID}.`});
@@ -209,7 +242,7 @@ export default class Validation extends Element {
     }
   }
 
-  static validateElementVal(elementID, value, index = undefined, scroll = false) {
+  static validateElementVal(elementID, value, index = undefined, scroll = false){
     this.getElement(elementID, index, scroll)
       .invoke('val')
       .then((actualValue) => {
@@ -218,17 +251,17 @@ export default class Validation extends Element {
       });    
   }
 
-  static validatePlaceholder(elementID, placeholder, index = undefined, scroll = undefined) {
+  static validatePlaceholder(elementID, placeholder, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should("have.attr", "placeholder", placeholder, { message: `O atributo 'placeholder' do elemento não é igual a '${placeholder}'. Identificador: ${elementID}.`});
   }
 
-  static validateTextIsVisible(text) {
+  static validateTextIsVisible(text){
     this.getElementByContainsText(text).as('el');
     cy.get('@el').should('be.visible', {message: `O elemento com o texto "${text}" está visível.`});
   }
 
-  static validateElementContainInnerText(elementID, text, index = 0, scroll = undefined) {
+  static validateElementContainInnerText(elementID, text, index = 0, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .invoke('text')
       .then((actualText) => {
@@ -237,71 +270,113 @@ export default class Validation extends Element {
       });    
   }
 
-  static validateCheckBoxIsChecked(elementID, index = undefined, scroll = undefined) {
+  static validateCheckBoxIsChecked(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should('be.checked', {message: `Campo checkbox não está marcado. Identificador: ${elementID}.`});
   }
 
-  static validateCheckBoxIsNotChecked(elementID, index = undefined, scroll = undefined) {
+  static validateCheckBoxIsNotChecked(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should('be.not.checked', {message: `Campo checkbox não deveria estar marcado. Identificador: ${elementID}.`});
   }
 
-  static validateElementIsNotVisible(elementID, index = undefined, scroll = false) {
+  static validateElementIsNotVisible(elementID, index = undefined, scroll = false){
     this.getElement(elementID, index, scroll);
     cy.get('@el').should('be.not.visible', {message: `O elemento não deveria está visível. Identificador: ${elementID}.`});
   }
 
-  static validateLastElementIsVisible(elementID, scroll = undefined) {
+  static validateLastElementIsVisible(elementID, scroll = undefined){
     this.getLastElement(elementID, scroll).as('el');
     cy.get('@el').should('be.visible', {message: `O elemento não está visível. Identificador: ${elementID}.`});
   }
 
-  static validateElementIsVisibleByText(elementID) {
+  static validateElementIsVisibleByText(elementID){
     this.getElementByContainsText(elementID).as('el');
     cy.get('@el').should('be.visible', {message: `O elemento não está visível. Identificador: ${elementID}.`});
   }
 
-  static validateElementHaveLink(elementID, index = undefined, scroll = undefined) {
+  static validateElementHaveLink(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should('have.attr', 'href', {message: `O elemento não possui o atributo "href". Identificador: ${elementID}`});
   }
 
-  static validateElementByTextHaveLink(elementID, index = undefined, caseSensitive = false) {
+  static validateElementByTextHaveLink(elementID, index = undefined, caseSensitive = false){
     this.getElementByContainsText(elementID, index, caseSensitive)
       .should('have.attr', 'href', {message: `O elemento não possui o atributo "href". Identificador: ${elementID}`});
   }
 
-  static validateLinkAttrHREF(elementID, path, index = undefined, scroll = undefined) {
+  static validateLinkAttrHREF(elementID, path, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll)
       .should('have.attr', 'href', { message: `Defeito encontrado no "href" do elemento. Esperado: "${path}". Identificador: ${elementID}.`}).and('include', path);
   }
 
-  static validateLinkAttrHREFbyTextLink(elementID, path, index = undefined, caseSensitive = false) {
+  static validateLinkAttrHREFbyTextLink(elementID, path, index = undefined, caseSensitive = false){
     this.getElementByContainsText(elementID, index, caseSensitive)
       .should('have.attr', 'href', { message: `Defeito encontrado no "href" do elemento. Esperado: "${path}". Identificador: ${elementID}.`}).and('include', path);
   }
 
-  static validatePageNotContainsText(text) {
+  static validatePageNotContainsText(text){
     cy.contains(text, { timeout: Cypress.env('global_timeout'), matchCase: false})
       .should('not.be.visible', {message: `O texto "${text}" não deveria estar visível na página.`});
   }
 
-  static validateTextExistOnPage(text) {
+  static validateTextExistOnPage(text){
     cy.contains(text, { timeout: Cypress.env('global_timeout'), matchCase: false}).as('el');
     cy.get('@el').should('exist', { message: `O elemento com texto "${text}" não foi encontrado.`});
   }
 
-  static validateTextNotExistOnPage(text) {
+  static validateTextNotExistOnPage(text){
     cy.contains(text, { timeout: Cypress.env('global_timeout'), matchCase: false})
       .should('not.exist', { message: `O texto "${text}" não deveria existir.`});
   }
 
-  static validateUrlPartialEndpoint(endpoint, vtimeout = Cypress.env('global_timeout')) {
+  static validateUrlPartialEndpoint(endpoint, vtimeout = Cypress.env('global_timeout')){
     cy.url({ timeout: vtimeout})
       .should('include', endpoint, {message: `A URL da página não contém o endpoint esperado: "${endpoint}".`})
       .then(() => {
         Request.waitUntilErrorNextStop();
       });
   }
+
+  static validateElementIsVibileInsideIframe(elementID, elementInside){
+    this.getIframeLoaded(elementID);
+    cy.iframe(elementID)
+      .find(elementInside)
+      .should('be.visible', {message: `O elemento dentro do iframe não está visível. Identificador: iframe ${elementID} - ${elementInside}.`});
+  }
+
+  static validateElementIsVibileInsideIframeByXpath(elementID, elementInside){
+    this.getIframeLoaded(elementID);
+    cy.iframe(elementID)
+      .xpath(elementInside)
+      .should('be.visible', {message: `O elemento não está visível. Identificador: iframe ${elementID} - ${elementInside}.`});
+  }
+
+  static a11log(violations) {
+    cy.task('log',
+      `${violations.length} accessibility violation${violations.length === 1 ? '' : 's'} ${violations.length === 1 ? 'was' : 'were'} detected`
+    );
+
+    const violationData = violations.map(
+      ({ id, impact, description, nodes }) => ({id, impact, description, nodes: nodes.length})
+    );
+      
+    cy.task('table', violationData);
+  }
+
+  static validateAccessibility(accessibility_element = null, webContentAccesibility = ["cat.color"]){
+    Request.explicitWait(5000);
+    //[wcag2a, wcag2aa, cat.color]
+    //https://github.com/dequelabs/axe-core/blob/master/doc/check-options.md
+    //https://www.deque.com/axe/core-documentation/api-documentation/
+    cy.injectAxe();
+    cy.checkA11y(accessibility_element, {
+      'runOnly': {type: 'tag', values: webContentAccesibility}, 
+      'includedImpacts': ['critical', 'serious'],
+      //'critical', 'serious', 'moderate', 'minor'
+    },
+    this.a11log);
+  }
 }
+
+

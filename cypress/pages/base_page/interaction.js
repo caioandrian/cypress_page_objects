@@ -1,9 +1,10 @@
-import Element from './element';
+import Elements from './elements';
 import Request from './request';
 
-export default class Interaction extends Element {
+export default class Interaction extends Elements{
   static clickElement(elementID, index = undefined, scroll = undefined) {
     this.getElement(elementID, index, scroll).as('el');
+    Request.explicitWait();
     return cy.get('@el').click({force: true});
   }
 
@@ -14,34 +15,35 @@ export default class Interaction extends Element {
   static clickElementByAlternativeText(text, text2 = undefined, index = undefined, scroll = false) {
     Request.explicitWait();
     this.getElement('body', index, scroll)
-      .then(($body) => {
+      .then(($body)=>{
         if ($body.text().includes(text))
           this.getElementByContainsText(text).click({force: true});
-        else {
+        else{
           if(text2 != undefined)
             this.getElementByContainsText(text2).click({force: true});
         }
       });
   }
 
-  static clickElementByFind(elementID, finder = undefined, index = undefined, scroll = undefined, indexFinder = undefined) {
+  static clickElementByFind(elementID, finder=undefined, index = undefined, scroll = undefined, indexFinder = undefined){
     this.getElementByFind(elementID, finder, index, scroll, indexFinder).as('el');
+    Request.explicitWait();
     cy.get('@el').click({force: true});
   }
 
-  static clickElementFilterByVisible(elementID, index = undefined) {
+  static clickElementFilterByVisible(elementID, index = undefined){
     this.getElementFilterVisible(elementID, index).as('el');
+    Request.explicitWait();
     cy.get('@el').click({force: true});
   }
 
-  static clickElementCheckBox(elementID, option, index = undefined, scroll = true) {
-    this.getElement(elementID, index, scroll)
-      .check(option, { force: true })
+  static clickElementCheckBox(elementID, option, index=undefined, scroll = true){
+    this.getElement(elementID, index, scroll).check(option, { force: true })
       .should('be.checked', {message: `Campo checkbox não está marcado. Identificador: ` + elementID});
   }
 
-  static clickElementByExistText(validate_text, element1, element2) {
-    this.getElement('body', false).then(($body) => {
+  static clickElementByExistText(validate_text, element1, element2){
+    this.getElement('body', false).then(($body)=>{
       if ($body.text().includes(validate_text))
         this.clickElement(element1);
       else
@@ -57,27 +59,27 @@ export default class Interaction extends Element {
       .click({force: true});
   }
 
-  static typeElement(elementID, text, index = undefined, scroll = undefined, opt_delay = 10) {
-    this.getElement(elementID, index, scroll).type(text, { force: true, delay: opt_delay });
+  static typeElement(elementID, text, index = undefined, scroll = undefined, opt_delay=10){
+    this.getElement(elementID, index, scroll).type(text, { force: true, delay: opt_delay});
   }
 
-  static typelLastElement(elementID, text, index = undefined, scroll = undefined, opt_delay = 10) {
-    this.getLastElement(elementID, index, scroll).type(text, { force: true, delay: opt_delay });
+  static typelLastElement(elementID, text, index = undefined, scroll = undefined, opt_delay=10){
+    this.getLastElement(elementID, index, scroll).type(text, { force: true, delay: opt_delay});
   }
 
-  static typeElementByFind(elementID, finder = undefined, index = undefined, scroll = undefined) {
+  static typeElementByFind(elementID, finder = undefined, index = undefined, scroll = undefined){
     this.getElementByFind(elementID, finder, index, scroll).type(text, { force: true });
   }
 
-  static clearElementInput(elementID, index = undefined, scroll = undefined) {
+  static clearElementInput(elementID, index = undefined, scroll = undefined){
     this.getElement(elementID, index, scroll).clear();
   }
 
-  static typeAndBlurElement(element, text, index = undefined, scroll = undefined) {
+  static typeAndBlurElement(element, text, index = undefined, scroll = undefined){
     this.getElement(element, index, scroll).type(text).blur();
   }
 
-  static clearElementAndType(element, text, index = undefined, scroll = undefined) {
+  static clearElementAndType(element, text, index = undefined, scroll = undefined){
     this.clearElementInput(element, index, scroll);
     Request.explicitWait();
     this.typeElement(element, text, index, scroll);
@@ -93,7 +95,10 @@ export default class Interaction extends Element {
       .its("length")
       .then((optionsLength) => {
         const random_option = Math.floor(Math.random() * optionsLength);
-        if(random_option == 0) random_option += 1;
+                
+        if(random_option == 0)
+          random_option += 1;
+
         this.getElement(element).select(random_option);
       });
   }
@@ -102,12 +107,8 @@ export default class Interaction extends Element {
     return this.getElement(element, scrollIntoView).check(value);
   }
 
-  static hoverElement(elementID, index = undefined, scroll = undefined) {
+  static hoverElement(elementID, index = undefined, scroll = undefined){
     return this.getElement(elementID, index, scroll).trigger("mouseover");
-  }
-
-  static doubleClickElement(elementID, index = undefined, scroll = undefined) {
-    return this.getElement(elementID, index, scroll).dblclick({force: true});
   }
 
   static typeElementInsideIframe(elementID, elementInside, value){
@@ -117,11 +118,58 @@ export default class Interaction extends Element {
       .type(value, { force: true});
   }
 
-  static clickElementByShadowAndFind(element, position = 0, find = null, p2 = 0){
-    return this.getElement(element, position)
-      .shadow()
-      .find(find)
-      .eq(p2)
-      .click({force: true});
+  static doubleClickElement(elementID, index = undefined, scroll = undefined) {
+    return this.getElement(elementID, index, scroll).dblclick({force: true});
   }
+
+  static doubleclickElement(elementID, index = undefined, scroll = undefined) {
+    return this.doubleClickElement(elementID, index, scroll);
+  }
+
+  static clickElementByTextFilterVisible(text, index = undefined, caseSensitive = false){
+    this.getElementFilterByContainsText(text, index, caseSensitive).click({force: true});
+  }
+
+  static clickElementInsideIframe(elementID, elementInside, index = 0){
+    this.getIframeLoaded(elementID);
+    cy.iframe(elementID).find(elementInside).eq(index).click({force: true});
+  }
+
+  static clickElementInsideIframeByXpath(elementID, elementInside, index = 0){
+    this.getIframeLoaded(elementID);
+    cy.iframe(elementID).xpath(elementInside).eq(index).click({force: true});
+  }
+
+  static selectOption(element, option, index = undefined, scrollIntoView = false) {
+    return this.getElement(element, index, scrollIntoView).select(option);
+  }
+
+  static selectRandomOption(element, index = undefined, scrollIntoView = false) {
+    this.getElement(element, index, scrollIntoView)
+      .find("option")
+      .its("length")
+      .then((optionsLength) => {
+        const random_option = Math.floor(Math.random() * optionsLength);
+                
+        //se a primeira opcao for selecione...
+        if(random_option == 0)
+          random_option += 1;
+
+        this.getElement(element).select(random_option);
+      });
+  }
+
+  static checkRadioOption(element, value, scrollIntoView = false) {
+    return this.getElement(element, scrollIntoView).check(value);
+  }
+
+  static typeElementInsideIframe(elementID, elementInside, value){
+    this.getIframe(elementID)
+      .find(elementInside)
+      .eq(0)
+      .type(value, { force: true});
+  }
+
 }
+
+
